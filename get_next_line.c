@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/12 16:19:22 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/13 20:02:30 by admin            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 int		get_next_line(const int fd, char **line)
 {
 	static char	*buff_end;
+	char		*tmp;
 	int			i;
 
 	i = 0;
@@ -27,33 +28,28 @@ int		get_next_line(const int fd, char **line)
 	if (buff_end == NULL && !(buff_end = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 			return (-1);
 	ft_strclr(*line);
-	//ft_putstr("check_nl : ");
-	//ft_putnbr(check_nl(buff_end));
-	//ft_putchar('\n');
 	if (check_nl(buff_end) == 1)
 	{
-		ft_putendl("IF");
 		while (buff_end[i] != '\n')
 			i++;
 		*line = ft_strncpy(*line, buff_end, i);
-		buff_end = ft_strchr(buff_end, '\n') + 1;
-		if (check_eof(fd, buff_end) == 1)
-			return (0);
-		return (1);
 	}
 	else
-	{
-		ft_putendl("ELSE");
 		*line = read_till_nl(fd, buff_end, line);
-		buff_end = ft_strchr(buff_end, '\n') + 1;
-		if (check_eof(fd, buff_end) == 1)
-			return (0);
+	buff_end = ft_strchr(buff_end, '\n') + 1;
+	if ((tmp = check_eof(fd, buff_end)) == NULL)
+		return (0);
+	else
+	{
+		if (&buff_end != &tmp)
+			buff_end = ft_strjoin(buff_end, tmp);
+		free(tmp);
 		return (1);
 	}
-	return (0);
+	return (1);
 }
 
-int		check_eof(int fd, char *buff_end)
+char	*check_eof(int fd, char *buff_end)
 {
 	int		i;
 	int		ret;
@@ -63,26 +59,15 @@ int		check_eof(int fd, char *buff_end)
 	while (i < (int)ft_strlen(buff_end))
 	{
 		if (buff_end[i] > 0)
-			return (0);
+			return (buff_end);
 		i++;
 	}
 	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
 	ret = read(fd, tmp, BUFF_SIZE);
 	tmp[ret] = '\0';
 	if (ret == 0)
-		return (1);
-	else
-	{
-		tmp = ft_strjoin(buff_end, tmp);
-		i = 0;
-		while (i <= (int)ft_strlen(tmp))
-		{
-			buff_end[i] = tmp[i];
-			i++;
-		}
-		return (0);
-	}
-	return (0);
+		return (NULL);
+	return (tmp);
 }
 
 int		check_nl(char *str)
