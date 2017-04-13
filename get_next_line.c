@@ -1,0 +1,153 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
+/*   Updated: 2017/04/12 16:19:22 by jprevota         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "./get_next_line.h"
+#include "./libft/libft.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int		get_next_line(const int fd, char **line)
+{
+	static char	*buff_end;
+	int			i;
+
+	i = 0;
+	if (fd < 0)
+		return (-1);
+	if (buff_end == NULL && !(buff_end = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
+			return (-1);
+	ft_strclr(*line);
+	//ft_putstr("check_nl : ");
+	//ft_putnbr(check_nl(buff_end));
+	//ft_putchar('\n');
+	if (check_nl(buff_end) == 1)
+	{
+		ft_putendl("IF");
+		while (buff_end[i] != '\n')
+			i++;
+		*line = ft_strncpy(*line, buff_end, i);
+		buff_end = ft_strchr(buff_end, '\n') + 1;
+		if (check_eof(fd, buff_end) == 1)
+			return (0);
+		return (1);
+	}
+	else
+	{
+		ft_putendl("ELSE");
+		*line = read_till_nl(fd, buff_end, line);
+		buff_end = ft_strchr(buff_end, '\n') + 1;
+		if (check_eof(fd, buff_end) == 1)
+			return (0);
+		return (1);
+	}
+	return (0);
+}
+
+int		check_eof(int fd, char *buff_end)
+{
+	int		i;
+	int		ret;
+	char	*tmp;
+
+	i = 0;
+	while (i < (int)ft_strlen(buff_end))
+	{
+		if (buff_end[i] > 0)
+			return (0);
+		i++;
+	}
+	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
+	ret = read(fd, tmp, BUFF_SIZE);
+	tmp[ret] = '\0';
+	if (ret == 0)
+		return (1);
+	else
+	{
+		tmp = ft_strjoin(buff_end, tmp);
+		i = 0;
+		while (i <= (int)ft_strlen(tmp))
+		{
+			buff_end[i] = tmp[i];
+			i++;
+		}
+		return (0);
+	}
+	return (0);
+}
+
+int		check_nl(char *str)
+{
+	int	i;
+
+	i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == '\n')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+char	*read_till_nl(int fd, char *buff, char **line)
+{
+	int		i;
+	int		ret;
+	char	*tmp;
+
+	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
+	while (check_nl(buff) != 1 && ret > 0)
+	{
+		*line = ft_strjoin(*line, buff);
+		ret = read(fd, buff, BUFF_SIZE);
+		buff[ret] = '\0';
+	}
+	i = 0;
+	while (buff[i] != '\n' && buff[i] != '\0')
+	{
+		tmp[i] = buff[i];
+		i++;
+	}
+	tmp[i] = '\0';
+	*line = ft_strjoin(*line, tmp);
+	free(tmp);
+	return (*line);
+}
+
+int		main(int argc, char **argv)
+{
+	int			fd;
+	char		**line;
+	int			gnl;
+
+	if (argc == 2)
+	{
+		if ((fd = open(argv[1], O_RDONLY)) == -1)
+			return (-1);
+		if (!(line = (char **)malloc(1 * sizeof(char *))))
+			return (-1);
+		*line = ft_strnew((size_t)(BUFF_SIZE + 1));
+		while ((gnl = get_next_line(fd, line)) != 0)
+		{
+			ft_putnbr(gnl);
+			ft_putendl("Line :");
+			ft_putstr(*line);
+			ft_putchar('\n');
+		}
+		ft_putnbr(gnl);
+		ft_putstr(*line);
+	}
+	else
+		ft_putendl("File missing");
+	return (0);
+}
