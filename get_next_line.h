@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/28 16:44:38 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/16 14:52:31 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/17 15:09:04 by jprevota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,6 @@
 
 int						get_next_line(const int fd, char **line);
 int						check_nl(char *str);
-int						check_eof(int fd, char *buff_end);
-char					*read_till_nl(int fd, char *buff, char **line);
-
-typedef struct			s_fd_list
-{
-	int					fd;
-	char				*buff_end;
-	struct t_fd_list	*next;
-}						t_fd_list;
+int						read_till_nl(int fd, char *buff, char **line);
 
 #endif
