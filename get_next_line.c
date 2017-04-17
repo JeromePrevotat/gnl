@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/17 15:12:33 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/17 17:19:46 by jprevota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,8 @@ int		get_next_line(const int fd, char **line)
 		return (-1);
 	if (buff_end == NULL &&
 			!(buff_end = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
-			return (-1);
+		return (-1);
 	ft_strclr(*line);
-	ft_putnbr(check_nl(buff_end));
-	ft_putchar('-');
 	if (check_nl(buff_end) == 1)
 	{
 		while (buff_end[i] != '\n')
@@ -42,7 +40,7 @@ int		get_next_line(const int fd, char **line)
 		eof = read_till_nl(fd, buff_end, line);
 	if (ft_strlen(buff_end) > 0 && check_nl(buff_end) == 1)
 		buff_end = ft_strchr(buff_end, '\n') + 1;
-	if (eof == 0)
+	if (eof == 0 || (check_nl(buff_end) == 0))
 		return (0);
 	return (1);
 }
