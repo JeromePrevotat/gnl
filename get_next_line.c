@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/18 14:23:33 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/18 14:59:31 by jprevota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,15 @@ int		get_next_line(const int fd, char **line)
 	int			i;
 	int			ret;
 
-	i = 0;
 	if (fd < 0 || !line)
+		return (-1);
+	if (!(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 		return (-1);
 	if (buff_end == NULL &&
 			!(buff_end = (char *)malloc((2 * BUFF_SIZE) + 1 * sizeof(char))))
 		return (-1);
 	ft_strclr(*line);
+	i = 0;
 	if (check_nl(buff_end) == 1)
 	{
 		while (buff_end[i] != '\n')
@@ -98,26 +100,24 @@ int		check_nl(char *str)
 int		main(int argc, char **argv)
 {
 	int			fd;
-	char		**line;
+	char		*line;
 	int			gnl;
 
 	if (argc == 2)
 	{
 		if ((fd = open(argv[1], O_RDONLY)) == -1)
 			return (-1);
-		if (!(line = (char **)malloc(1 * sizeof(char *))))
-			return (-1);
-		*line = ft_strnew((size_t)(BUFF_SIZE + 1));
-		while ((gnl = get_next_line(fd, line)) != 0)
+
+		while ((gnl = get_next_line(fd, &line)) != 0)
 		{
 			ft_putnbr(gnl);
 			ft_putendl(" // Line :");
-			ft_putstr(*line);
+			ft_putstr(line);
 			ft_putchar('\n');
 		}
 		ft_putnbr(gnl);
 		ft_putendl(" // Line :");
-		ft_putstr(*line);
+		ft_putstr(line);
 	}
 	else
 		ft_putendl("File missing");
