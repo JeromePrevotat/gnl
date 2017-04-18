@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/17 17:19:46 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/18 14:23:33 by jprevota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@ int		get_next_line(const int fd, char **line)
 {
 	static char	*buff_end;
 	int			i;
-	int			eof;
+	int			ret;
 
 	i = 0;
 	if (fd < 0 || !line)
 		return (-1);
 	if (buff_end == NULL &&
-			!(buff_end = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
+			!(buff_end = (char *)malloc((2 * BUFF_SIZE) + 1 * sizeof(char))))
 		return (-1);
 	ft_strclr(*line);
 	if (check_nl(buff_end) == 1)
@@ -34,15 +34,27 @@ int		get_next_line(const int fd, char **line)
 		while (buff_end[i] != '\n')
 			i++;
 		*line = ft_strncpy(*line, buff_end, i);
-		eof = 1;
 	}
 	else
-		eof = read_till_nl(fd, buff_end, line);
+		read_till_nl(fd, buff_end, line);
 	if (ft_strlen(buff_end) > 0 && check_nl(buff_end) == 1)
 		buff_end = ft_strchr(buff_end, '\n') + 1;
-	if (eof == 0 || (check_nl(buff_end) == 0))
+	ret = fill_buffer(fd, buff_end);
+	if (ret == 0 && (check_nl(buff_end) == 0) && ft_strlen(buff_end) == 0)
 		return (0);
 	return (1);
+}
+
+int		fill_buffer(int fd, char *buff_end)
+{
+	int		ret;
+	char	*tmp;
+
+	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
+	ret = read(fd, tmp, BUFF_SIZE);
+	tmp[ret] = '\0';
+	buff_end = ft_strcat(buff_end, tmp);
+	return (ret);
 }
 
 int		read_till_nl(int fd, char *buff_end, char **line)
@@ -52,9 +64,9 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 	char	*tmp;
 
 	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
-	while (check_nl(buff_end) != 1 && ret > 0)
+	while (check_nl(buff_end) == 0)
 	{
-		*line = ft_strjoin(*line, buff_end);
+		*line = ft_strcat(*line, buff_end);
 		ret = read(fd, buff_end, BUFF_SIZE);
 		buff_end[ret] = '\0';
 	}
@@ -65,7 +77,7 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 		i++;
 	}
 	tmp[i] = '\0';
-	*line = ft_strjoin(*line, tmp);
+	*line = ft_strcat(*line, tmp);
 	return (ret);
 }
 
