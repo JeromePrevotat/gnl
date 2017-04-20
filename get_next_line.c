@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/18 15:29:30 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/20 17:00:00 by admin            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
 	while (check_nl(buff_end) == 0)
 	{
-		*line = ft_strcat(*line, buff_end);
+		*line = ft_strjoin(*line, buff_end);
 		ret = read(fd, buff_end, BUFF_SIZE);
 		buff_end[ret] = '\0';
 	}
@@ -79,7 +79,7 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 		i++;
 	}
 	tmp[i] = '\0';
-	*line = ft_strcat(*line, tmp);
+	*line = ft_strjoin(*line, tmp);
 	return (ret);
 }
 
@@ -96,7 +96,7 @@ int		check_nl(char *str)
 	}
 	return (0);
 }
-
+/*
 int		main(int argc, char **argv)
 {
 	int			fd;
@@ -122,4 +122,4 @@ int		main(int argc, char **argv)
 	else
 		ft_putendl("File missing");
 	return (0);
-}
+}*/
