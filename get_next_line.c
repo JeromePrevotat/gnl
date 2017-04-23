@@ -6,7 +6,7 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/20 17:00:00 by admin            ###   ########.fr       */
+/*   Updated: 2017/04/24 00:50:51 by admin            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int		get_next_line(const int fd, char **line)
 	{
 		while (buff_end[i] != '\n')
 			i++;
-		*line = ft_strncpy(*line, buff_end, i);
+		*line = strncpy(*line, buff_end, i);
 	}
 	else
 		read_till_nl(fd, buff_end, line);
@@ -55,7 +55,7 @@ int		fill_buffer(int fd, char *buff_end)
 	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
 	ret = read(fd, tmp, BUFF_SIZE);
 	tmp[ret] = '\0';
-	buff_end = ft_strcat(buff_end, tmp);
+	buff_end = ft_strncat(buff_end, tmp, ft_strlen(tmp));
 	return (ret);
 }
 
@@ -79,7 +79,7 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 		i++;
 	}
 	tmp[i] = '\0';
-	*line = ft_strjoin(*line, tmp);
+	*line = ft_strncat(*line, tmp, ft_strlen(tmp));
 	return (ret);
 }
 
@@ -96,7 +96,7 @@ int		check_nl(char *str)
 	}
 	return (0);
 }
-/*
+
 int		main(int argc, char **argv)
 {
 	int			fd;
@@ -122,4 +122,4 @@ int		main(int argc, char **argv)
 	else
 		ft_putendl("File missing");
 	return (0);
-}*/
+}
