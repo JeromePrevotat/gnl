@@ -21,6 +21,7 @@ int		get_next_line(const int fd, char **line)
 	static char	*buff_end;
 	int			i;
 	int			ret;
+	char			*tmp;
 
 	if (fd < 0 || !line)
 		return (-1);
@@ -34,32 +35,28 @@ int		get_next_line(const int fd, char **line)
 		ft_memset(buff_end, '\0', BUFF_SIZE + 1);
 	}
 	i = 0;
-	if (check_nl(buff_end) == 1)
+	ret = 0;
+	if (check_nl(buff_end) == 1 || check_eof(buff_end) == 1)
 	{
-		while (buff_end[i] != '\n')
+		while (buff_end[i] != '\n' && buff_end[i] != -1)
 			i++;
 		*line = ft_strncpy(*line, buff_end, i);
 	}
 	else
-		read_till_nl(fd, buff_end, line);
+		ret = read_till_nl(fd, buff_end, line);
 	if (ft_strlen(buff_end) > 0 && check_nl(buff_end) == 1)
 		buff_end = ft_strchr(buff_end, '\n') + 1;
-	if (ft_strlen(buff_end) == 0)
-		if ((ret = fill_buffer(fd, buff_end) == 0) && check_nl(buff_end) == 0)
-			return (0);
+	if (ret < BUFF_SIZE)
+	{
+		if (!(tmp = (char *)malloc(2 * sizeof(char))))
+			return (-1);
+		tmp[0] = -1;
+		tmp[1] = '\0';
+		buff_end = str_memcat(buff_end, tmp);
+	}
+	if (ret == 0)
+		return (0);
 	return (1);
-}
-
-int		fill_buffer(int fd, char *buff_end)
-{
-	int		ret;
-	char	*tmp;
-
-	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
-	ret = read(fd, tmp, BUFF_SIZE);
-	tmp[ret] = '\0';
-	buff_end = ft_strcat(buff_end, tmp);
-	return (ret);
 }
 
 int		read_till_nl(int fd, char *buff_end, char **line)
@@ -67,12 +64,11 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 	int	i;
 	int	ret;
 	char	*tmp;
-	char *tmp2;
 
 	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
 	while (check_nl(buff_end) == 0)
 	{
-		*line = ft_strjoin(*line, buff_end);		
+		*line = str_memcat(*line, buff_end);
 		ret = read(fd, buff_end, BUFF_SIZE);
 		buff_end[ret] = '\0';
 	}
@@ -83,15 +79,21 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 		i++;
 	}
 	tmp[i] = '\0';
-	//Proper concat == ft_strjoin(*line, tmp)
-	tmp2 = (char *)malloc(ft_strlen(*line) + ft_strlen(tmp) + 1);
-	ft_memset(tmp2, '\0', ft_strlen(*line) + ft_strlen(tmp) + 1);
-	ft_memcpy(tmp2, *line, ft_strlen(*line));
-	ft_memcpy(tmp2 + ft_strlen(*line), tmp, ft_strlen(tmp));
-	tmp2[ft_strlen(*line) + ft_strlen(tmp)] = '\0';
-	*line = tmp2;
-	//End concat // free ?
+	*line = str_memcat(*line, tmp);
 	return (ret);
+}
+
+char		*str_memcat(char *mem1, char *mem2)
+{
+	char *tmp;
+
+	tmp = (char *)malloc(ft_strlen(mem1) + ft_strlen(mem2) + 1);
+	ft_memset(tmp, '\0', ft_strlen(mem1) + ft_strlen(mem2));
+	ft_memcpy(tmp, mem1, ft_strlen(mem1));
+	ft_memcpy(tmp + ft_strlen(mem1), mem2, ft_strlen(mem2));
+	tmp[ft_strlen(mem1) + ft_strlen(mem2)] = '\0';
+	//ft_strdel(&mem1);
+	return (tmp);
 }
 
 int		check_nl(char *str)
@@ -108,6 +110,20 @@ int		check_nl(char *str)
 	return (0);
 }
 
+int		check_eof(char *str)
+{
+	int	i;
+
+	i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == -1)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+/*
 int		main(int argc, char **argv)
 {
 	int			fd;
@@ -125,11 +141,9 @@ int		main(int argc, char **argv)
 			ft_putstr(line);
 			ft_putchar('\n');
 		}
-		ft_putnbr(gnl);
-		ft_putendl(" // Line :");
-		ft_putstr(line);
 	}
 	else
 		ft_putendl("File missing");
 	return (0);
 }
+*/

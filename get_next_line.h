@@ -18,7 +18,9 @@
 
 int		get_next_line(const int fd, char **line);
 int		check_nl(char *str);
+int		check_eof(char *str);
 int		fill_buffer(int fd, char *buff_end);
 int		read_till_nl(int fd, char *buff, char **line);
+char      *str_memcat(char *mem1, char *mem2);
 
 #endif
