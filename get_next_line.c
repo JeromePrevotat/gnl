@@ -22,9 +22,8 @@ int		get_next_line(const int fd, char **line)
 	int			i;
 	int			ret;
 
-	if (fd < 0 || !line)
-		return (-1);
-	if (!(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
+	if (!(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))) ||
+		fd < 0 || !line)
 		return (-1);
 	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
 	if (buff_end == NULL)
@@ -52,8 +51,8 @@ int		get_next_line(const int fd, char **line)
 
 int		read_till_nl(int fd, char *buff_end, char **line)
 {
-	int	i;
-	int	ret;
+	int		i;
+	int		ret;
 	char	*tmp;
 
 	if (!(tmp = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
@@ -100,8 +99,6 @@ int		check_nl(char *str)
 	{
 		if (str[i] == '\n')
 			return (1);
-		if (str[i] == -1)
-			return (-1);
 		i++;
 	}
 	return (0);
