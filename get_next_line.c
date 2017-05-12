@@ -21,7 +21,6 @@ int		get_next_line(const int fd, char **line)
 	static char	*buff_end;
 	int			i;
 	int			ret;
-	char			*tmp;
 
 	if (fd < 0 || !line)
 		return (-1);
@@ -36,9 +35,9 @@ int		get_next_line(const int fd, char **line)
 	}
 	i = 0;
 	ret = 0;
-	if (check_nl(buff_end) == 1 || check_nl(buff_end) == -1)
+	if (check_nl(buff_end) == 1)
 	{
-		while (buff_end[i] != '\n' && buff_end[i] != -1)
+		while (buff_end[i] != '\n')
 			i++;
 		*line = ft_strncpy(*line, buff_end, i);
 	}
@@ -46,16 +45,7 @@ int		get_next_line(const int fd, char **line)
 		ret = read_till_nl(fd, buff_end, line);
 	if (ft_strlen(buff_end) > 0 && check_nl(buff_end) == 1)
 		buff_end = ft_strchr(buff_end, '\n') + 1;
-	if (ret < BUFF_SIZE)
-	{
-		if (!(tmp = (char *)malloc(2 * sizeof(char))))
-			return (-1);
-		ft_memset(tmp, '\0', 2);
-		tmp[0] = -1;
-		tmp[1] = '\0';
-		buff_end = str_memcat(buff_end, tmp);
-	}
-	if (buff_end[0] == -1 && ret == 0)
+	if (ret == 0 && ft_strlen(*line) == 0)
 		return (0);
 	return (1);
 }
@@ -66,9 +56,11 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 	int	ret;
 	char	*tmp;
 
-	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
-	ret = -1;
-	while (check_nl(buff_end) == 0 && ret != 0)
+	if (!(tmp = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
+		return (-1);
+	ft_memset(tmp, '\0', BUFF_SIZE + 1);
+	ret = 1;
+	while (check_nl(buff_end) == 0 && ret > 0)
 	{
 		*line = str_memcat(*line, buff_end);
 		ret = read(fd, buff_end, BUFF_SIZE);
@@ -114,7 +106,7 @@ int		check_nl(char *str)
 	}
 	return (0);
 }
-
+/*
 int		main(int argc, char **argv)
 {
 	int			fd;
@@ -137,3 +129,4 @@ int		main(int argc, char **argv)
 		ft_putendl("File missing");
 	return (0);
 }
+*/
