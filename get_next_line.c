@@ -27,16 +27,16 @@ int		get_next_line(const int fd, char **line)
 		return (-1);
 	if (!(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 		return (-1);
-	ft_memset(*line, '\0', BUFF_SIZE + 1);
+	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
 	if (buff_end == NULL)
 	{
 		if (!(buff_end = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 			return (-1);
-		ft_memset(buff_end, '\0', BUFF_SIZE + 1);
+		ft_memset(buff_end, '\0', (size_t)(BUFF_SIZE + 1));
 	}
 	i = 0;
 	ret = 0;
-	if (check_nl(buff_end) == 1 || check_eof(buff_end) == 1)
+	if (check_nl(buff_end) == 1 || check_nl(buff_end) == -1)
 	{
 		while (buff_end[i] != '\n' && buff_end[i] != -1)
 			i++;
@@ -50,11 +50,12 @@ int		get_next_line(const int fd, char **line)
 	{
 		if (!(tmp = (char *)malloc(2 * sizeof(char))))
 			return (-1);
+		ft_memset(tmp, '\0', 2);
 		tmp[0] = -1;
 		tmp[1] = '\0';
 		buff_end = str_memcat(buff_end, tmp);
 	}
-	if (ret == 0)
+	if (buff_end[0] == -1 && ret == 0)
 		return (0);
 	return (1);
 }
@@ -66,7 +67,8 @@ int		read_till_nl(int fd, char *buff_end, char **line)
 	char	*tmp;
 
 	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
-	while (check_nl(buff_end) == 0)
+	ret = -1;
+	while (check_nl(buff_end) == 0 && ret != 0)
 	{
 		*line = str_memcat(*line, buff_end);
 		ret = read(fd, buff_end, BUFF_SIZE);
@@ -87,8 +89,9 @@ char		*str_memcat(char *mem1, char *mem2)
 {
 	char *tmp;
 
-	tmp = (char *)malloc(ft_strlen(mem1) + ft_strlen(mem2) + 1);
-	ft_memset(tmp, '\0', ft_strlen(mem1) + ft_strlen(mem2));
+	if (!(tmp = (char *)malloc(ft_strlen(mem1) + ft_strlen(mem2) + 1)))
+		return (NULL);
+	ft_memset(tmp, '\0', (size_t)(ft_strlen(mem1) + ft_strlen(mem2) + 1));
 	ft_memcpy(tmp, mem1, ft_strlen(mem1));
 	ft_memcpy(tmp + ft_strlen(mem1), mem2, ft_strlen(mem2));
 	tmp[ft_strlen(mem1) + ft_strlen(mem2)] = '\0';
@@ -105,25 +108,13 @@ int		check_nl(char *str)
 	{
 		if (str[i] == '\n')
 			return (1);
-		i++;
-	}
-	return (0);
-}
-
-int		check_eof(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i] != '\0')
-	{
 		if (str[i] == -1)
-			return (1);
+			return (-1);
 		i++;
 	}
 	return (0);
 }
-/*
+
 int		main(int argc, char **argv)
 {
 	int			fd;
@@ -146,4 +137,3 @@ int		main(int argc, char **argv)
 		ft_putendl("File missing");
 	return (0);
 }
-*/
