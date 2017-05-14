@@ -23,8 +23,7 @@ int		get_next_line(const int fd, char **line)
 	int			ret;
 	int			eof;
 
-	if (!(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))) ||
-		fd < 0 || !line)
+	if (fd < 0 || line == NULL || !(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 		return (-1);
 	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
 	if (buff_end == NULL)
@@ -51,7 +50,7 @@ int		get_next_line(const int fd, char **line)
 		*line = str_memcat(*line, buff_end, ft_strlen(buff_end));
 		if (eof != 1)
 			ret = fill_buffer(fd, buff_end);
-		if (eof == 1 && ft_strlen(*line) != 0)
+		if (eof == 1 && ft_strlen(*line) != 0 && ret == 0)
 			return (1);
 	}
 	return (0);
@@ -66,6 +65,7 @@ int 	fill_buffer(int fd, char *buff_end)
 	if (!(buff = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 		return (-1);
 	ft_memset(buff, '\0', (size_t)(BUFF_SIZE + 1));
+	ft_memset(buff_end, '\0', (size_t)(BUFF_SIZE + 1));
 	ret = read(fd, buff, BUFF_SIZE);
 	buff[ret] = '\0';
 	i = 0;
@@ -105,7 +105,7 @@ int		check_nl(char *str)
 	}
 	return (0);
 }
-
+/*
 int		main(int argc, char **argv)
 {
 	int			fd;
@@ -129,4 +129,4 @@ int		main(int argc, char **argv)
 	else
 		ft_putendl("File missing");
 	return (0);
-}
+}*/
