@@ -21,7 +21,6 @@ int		get_next_line(const int fd, char **line)
 	static char	*buff_end;
 	int			i;
 	int			ret;
-	int			eof;
 
 	if (!line || !(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char)))
 		|| fd < 0)
@@ -35,11 +34,8 @@ int		get_next_line(const int fd, char **line)
 	}
 	i = 0;
 	ret = 1;
-	eof = 0;
-	while (eof == 0)
+	while (ret != 0)
 	{
-		if (ret == 0)
-			eof = 1;
 		if (buff_end != NULL && check_nl(buff_end) == 1)
 		{
 			while (buff_end[i] != '\n')
@@ -49,9 +45,8 @@ int		get_next_line(const int fd, char **line)
 			return (1);
 		}
 		*line = str_memcat(*line, buff_end, ft_strlen(buff_end));
-		if (eof != 1)
-			ret = fill_buffer(fd, buff_end);
-		if (eof == 1 && ft_strlen(*line) != 0)
+		ret = fill_buffer(fd, buff_end);
+		if (ret == 0 && ft_strlen(*line) != 0)
 			return (1);
 	}
 	return (0);
