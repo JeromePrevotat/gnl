@@ -18,34 +18,34 @@
 
 int		get_next_line(const int fd, char **line)
 {
-	static char	*buff_end;
-	char			*buff;
-	int			i;
-	int			ret;
+	char	*buff;
+	int		ret;
 
+	ret = 1;
 	if (!line || !(*line = (char *)malloc(BUFF_SIZE + 1 * sizeof(char)))
 		|| fd < 0)
 		return (-1);
 	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
-	if (buff_end == NULL)
-	{
-		if (!(buff_end = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
-			return (-1);
-		ft_memset(buff_end, '\0', (size_t)(BUFF_SIZE + 1));
-	}
 	if (!(buff = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
 		return (-1);
-	ft_memset(buff, '\0', (size_t)(BUFF_SIZE + 1));
+	return (gnl(buff, line, fd, ret));
+}
+
+int		gnl(char *buff, char **line, const int fd, int ret)
+{
+	static char	*buff_end;
+	int			i;
+
 	i = 0;
-	ret = 1;
-	buff = str_memcat(buff, buff_end, ft_strlen(buff_end));
+	if (buff_end != NULL)
+		buff = str_memcat(buff, buff_end, ft_strlen(buff_end));
+	else if (!(buff_end = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
+		return (-1);
 	ft_memset(buff_end, '\0', ft_strlen(buff_end));
 	while (ret > 0)
 	{
-		if (check_nl(buff) == 1)
+		if ((i = check_nl(buff)) != -1)
 		{
-			while (buff[i] != '\n')
-				i++;
 			*line = str_memcat(*line, buff, i);
 			buff_end = ft_strchr(buff, '\n') + 1;
 			return (1);
@@ -59,10 +59,10 @@ int		get_next_line(const int fd, char **line)
 	return (0);
 }
 
-int 	fill_buffer(int fd, char *buff)
+int		fill_buffer(int fd, char *buff)
 {
-	int ret;
-	char *buff2;
+	int		ret;
+	char	*buff2;
 
 	if (!(buff2 = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 		return (-1);
@@ -76,9 +76,9 @@ int 	fill_buffer(int fd, char *buff)
 	return (ret);
 }
 
-char 	*str_memcat(char *mem1, char *mem2, size_t size)
+char	*str_memcat(char *mem1, char *mem2, size_t size)
 {
-	char *tmp;
+	char	*tmp;
 
 	if (!(tmp = (char *)malloc(ft_strlen(mem1) + size + 1)))
 		return (NULL);
@@ -99,10 +99,10 @@ int		check_nl(char *str)
 	while (i < ft_strlen(str))
 	{
 		if (str[i] == '\n')
-			return (1);
+			return (i);
 		i++;
 	}
-	return (0);
+	return (-1);
 }
 /*
 int		main(int argc, char **argv)

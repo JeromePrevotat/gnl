@@ -17,8 +17,9 @@
 # include "./libft/libft.h"
 
 int		get_next_line(const int fd, char **line);
+int		gnl(char *buff, char **line, const int fd, int ret);
+int		fill_buffer(int fd, char *buff_end);
+char	*str_memcat(char *mem1, char *mem2, size_t size);
 int		check_nl(char *str);
-int       fill_buffer(int fd, char *buff_end);
-char      *str_memcat(char *mem1, char *mem2, size_t size);
 
 #endif
