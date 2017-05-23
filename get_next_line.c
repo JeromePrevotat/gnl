@@ -28,6 +28,7 @@ int		get_next_line(const int fd, char **line)
 	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
 	if (!(buff = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
 		return (-1);
+	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
 	return (gnl(buff, line, fd, ret));
 }
 
@@ -36,7 +37,6 @@ int		gnl(char *buff, char **line, const int fd, int ret)
 	static char	*buff_end;
 	int			i;
 
-	i = 0;
 	if (buff_end != NULL)
 		buff = str_memcat(buff, buff_end, ft_strlen(buff_end));
 	else if (!(buff_end = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
@@ -64,13 +64,13 @@ int		fill_buffer(int fd, char *buff)
 	int		ret;
 	char	*buff2;
 
-	if (!(buff2 = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
+	if (!(buff2 = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
 		return (-1);
 	ft_memset(buff2, '\0', (size_t)(BUFF_SIZE + 1));
 	if ((ret = read(fd, buff2, BUFF_SIZE)) == -1)
 		return (-1);
 	buff2[ret] = '\0';
-	buff = ft_memmove(buff, buff2, BUFF_SIZE);
+	buff = ft_memmove(buff, buff2, BUFF_SIZE + 1);
 	if (buff2 != NULL)
 		free(buff2);
 	return (ret);
