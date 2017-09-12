@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jprevota <jprevota@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/24 18:02:45 by admin            ###   ########.fr       */
+/*   Updated: 2017/04/24 18:02:45 by jprevota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,26 +28,24 @@ int		get_next_line(const int fd, char **line)
 	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
 	if (!(buff = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
 		return (-1);
-	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
+	ft_memset(buff, '\0', (size_t)(BUFF_SIZE + 1));
 	return (gnl(buff, line, fd, ret));
 }
 
 int		gnl(char *buff, char **line, const int fd, int ret)
 {
-	static char	*buff_end;
+	static char	buff_end[BUFF_SIZE + 1];
 	int			i;
 
-	if (buff_end != NULL)
-		buff = str_memcat(buff, buff_end, ft_strlen(buff_end));
-	else if (!(buff_end = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
-		return (-1);
-	ft_memset(buff_end, '\0', ft_strlen(buff_end));
+	buff = ft_memcpy(buff, buff_end, ft_strlen(buff_end));
+	ft_memset(buff_end, '\0', BUFF_SIZE + 1);
 	while (ret > 0)
 	{
-		if ((i = check_nl(buff)) != -1)
+		if ((i = check_nl(buff)) >= 0)
 		{
 			*line = str_memcat(*line, buff, i);
-			buff_end = ft_strchr(buff, '\n') + 1;
+			ft_memcpy(buff_end, buff + i + 1, ft_strlen(buff) - i - 1);
+			free(buff);
 			return (1);
 		}
 		*line = str_memcat(*line, buff, ft_strlen(buff));
@@ -56,23 +54,17 @@ int		gnl(char *buff, char **line, const int fd, int ret)
 		if (ret == 0 && ft_strlen(*line) > 0)
 			return (1);
 	}
+	free(buff);
 	return (0);
 }
 
 int		fill_buffer(int fd, char *buff)
 {
 	int		ret;
-	char	*buff2;
 
-	if (!(buff2 = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
+	if ((ret = read(fd, buff, BUFF_SIZE)) == -1)
 		return (-1);
-	ft_memset(buff2, '\0', (size_t)(BUFF_SIZE + 1));
-	if ((ret = read(fd, buff2, BUFF_SIZE)) == -1)
-		return (-1);
-	buff2[ret] = '\0';
-	buff = ft_memmove(buff, buff2, BUFF_SIZE + 1);
-	if (buff2 != NULL)
-		free(buff2);
+	buff[ret] = '\0';
 	return (ret);
 }
 
@@ -104,9 +96,10 @@ int		check_nl(char *str)
 	}
 	return (-1);
 }
-/*
+
 int		main(int argc, char **argv)
 {
+
 	int			fd;
 	char		*line;
 	int			gnl;
@@ -124,8 +117,9 @@ int		main(int argc, char **argv)
 			ft_memset(line, '\0', (size_t)(ft_strlen(line)));
 			free(line);
 		}
+		free(line);
 	}
 	else
 		ft_putendl("File missing");
 	return (0);
-}*/
+}
