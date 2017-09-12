@@ -16,9 +16,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <stdio.h>
+
 int		get_next_line(const int fd, char **line)
 {
-	char	*buff;
 	int		ret;
 
 	ret = 1;
@@ -26,35 +27,36 @@ int		get_next_line(const int fd, char **line)
 		|| fd < 0)
 		return (-1);
 	ft_memset(*line, '\0', (size_t)(BUFF_SIZE + 1));
-	if (!(buff = (char *)malloc((BUFF_SIZE + 1) * sizeof(char))))
-		return (-1);
-	ft_memset(buff, '\0', (size_t)(BUFF_SIZE + 1));
-	return (gnl(buff, line, fd, ret));
+	return (gnl(line, fd, ret));
 }
 
-int		gnl(char *buff, char **line, const int fd, int ret)
+int		gnl(char **line, const int fd, int ret)
 {
-	static char	buff_end[BUFF_SIZE + 1];
+	static char	buff_end[256];
 	int			i;
 
-	buff = ft_memcpy(buff, buff_end, ft_strlen(buff_end));
-	ft_memset(buff_end, '\0', BUFF_SIZE + 1);
 	while (ret > 0)
 	{
-		if ((i = check_nl(buff)) >= 0)
+		if ((i = check_nl(buff_end)) >= 0)
 		{
-			*line = str_memcat(*line, buff, i);
-			ft_memcpy(buff_end, buff + i + 1, ft_strlen(buff) - i - 1);
-			free(buff);
+			*line = str_memcat(*line, buff_end, i);
+			ft_strcpy(buff_end, buff_end + i + 1);
 			return (1);
 		}
-		*line = str_memcat(*line, buff, ft_strlen(buff));
-		if ((ret = fill_buffer(fd, buff)) == -1)
+		if (ft_strlen(buff_end) + BUFF_SIZE + 1 > 256)
+		{
+			*line = str_memcat(*line, buff_end, ft_strlen(buff_end));
+			ft_memset(buff_end, '\0', 256);
+		}
+		if ((ret = fill_buffer(fd, buff_end + ft_strlen(buff_end))) == -1)
 			return (-1);
-		if (ret == 0 && ft_strlen(*line) > 0)
+		if (ret == 0 && ft_strlen(buff_end) > 0)
+		{
+			*line = str_memcat(*line, buff_end, ft_strlen(buff_end));
+			ft_memset(buff_end, '\0', 256);
 			return (1);
+		}
 	}
-	free(buff);
 	return (0);
 }
 
@@ -97,7 +99,7 @@ int		check_nl(char *str)
 	return (-1);
 }
 
-int		main(int argc, char **argv)
+/*int		main(int argc, char **argv)
 {
 
 	int			fd;
@@ -110,10 +112,10 @@ int		main(int argc, char **argv)
 			return (-1);
 		while ((gnl = get_next_line(fd, &line)) != 0)
 		{
-			ft_putnbr(gnl);
-			ft_putendl(" // Line :");
+			//ft_putnbr(gnl);
+			//ft_putendl(" // Line :");
 			ft_putstr(line);
-			ft_putchar('\n');
+			//ft_putchar('\n');
 			ft_memset(line, '\0', (size_t)(ft_strlen(line)));
 			free(line);
 		}
@@ -122,4 +124,4 @@ int		main(int argc, char **argv)
 	else
 		ft_putendl("File missing");
 	return (0);
-}
+}*/
