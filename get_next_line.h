@@ -19,7 +19,7 @@
 int		get_next_line(const int fd, char **line);
 int		gnl(char **line, const int fd, int ret);
 int		fill_buffer(int fd, char *buff_end);
-char	*str_memcat(char *mem1, char *mem2, size_t size);
+char	*str_memcat(char *mem1, char *mem2, size_t size, int reset);
 int		check_nl(char *str);
 
 #endif

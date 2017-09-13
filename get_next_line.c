@@ -16,8 +16,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <stdio.h>
-
 int		get_next_line(const int fd, char **line)
 {
 	int		ret;
@@ -39,21 +37,17 @@ int		gnl(char **line, const int fd, int ret)
 	{
 		if ((i = check_nl(buff_end)) >= 0)
 		{
-			*line = str_memcat(*line, buff_end, i);
+			*line = str_memcat(*line, buff_end, i, 0);
 			ft_strcpy(buff_end, buff_end + i + 1);
 			return (1);
 		}
 		if (ft_strlen(buff_end) + BUFF_SIZE + 1 > 256)
-		{
-			*line = str_memcat(*line, buff_end, ft_strlen(buff_end));
-			ft_memset(buff_end, '\0', 256);
-		}
+			*line = str_memcat(*line, buff_end, ft_strlen(buff_end), 1);
 		if ((ret = fill_buffer(fd, buff_end + ft_strlen(buff_end))) == -1)
 			return (-1);
 		if (ret == 0 && ft_strlen(buff_end) > 0)
 		{
-			*line = str_memcat(*line, buff_end, ft_strlen(buff_end));
-			ft_memset(buff_end, '\0', 256);
+			*line = str_memcat(*line, buff_end, ft_strlen(buff_end), 1);
 			return (1);
 		}
 	}
@@ -70,7 +64,7 @@ int		fill_buffer(int fd, char *buff)
 	return (ret);
 }
 
-char	*str_memcat(char *mem1, char *mem2, size_t size)
+char	*str_memcat(char *mem1, char *mem2, size_t size, int reset)
 {
 	char	*tmp;
 
@@ -80,6 +74,8 @@ char	*str_memcat(char *mem1, char *mem2, size_t size)
 	ft_memcpy(tmp, mem1, ft_strlen(mem1));
 	ft_memcpy(tmp + ft_strlen(mem1), mem2, size);
 	tmp[ft_strlen(mem1) + size] = '\0';
+	if (reset == 1)
+		ft_memset(mem2, '\0', 256);
 	if (mem1 != NULL)
 		free(mem1);
 	return (tmp);
@@ -98,30 +94,3 @@ int		check_nl(char *str)
 	}
 	return (-1);
 }
-
-/*int		main(int argc, char **argv)
-{
-
-	int			fd;
-	char		*line;
-	int			gnl;
-
-	if (argc == 2)
-	{
-		if ((fd = open(argv[1], O_RDONLY)) == -1)
-			return (-1);
-		while ((gnl = get_next_line(fd, &line)) != 0)
-		{
-			//ft_putnbr(gnl);
-			//ft_putendl(" // Line :");
-			ft_putstr(line);
-			//ft_putchar('\n');
-			ft_memset(line, '\0', (size_t)(ft_strlen(line)));
-			free(line);
-		}
-		free(line);
-	}
-	else
-		ft_putendl("File missing");
-	return (0);
-}*/
