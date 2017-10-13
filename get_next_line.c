@@ -3,131 +3,85 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: jprevota <jprevota@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/16 14:59:53 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/16 15:35:08 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/24 18:02:45 by jprevota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "./get_next_line.h"
-#include "./libft/libft.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
-int		get_next_line(const int fd, char **line)
+static int	check_nl(char *str)
 {
-	static char	*buff_end;
-	int			i;
+	size_t	i;
 
 	i = 0;
-	if (fd < 0 || !line)
-		return (-1);
-	if (buff_end == NULL &&
-			!(buff_end = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
-			return (-1);
-	ft_strclr(*line);
-	if (check_nl(buff_end) == 1)
-	{
-		while (buff_end[i] != '\n')
-			i++;
-		*line = ft_strncpy(*line, buff_end, i);
-	}
-	else
-		*line = read_till_nl(fd, buff_end, line);
-	if (ft_strlen(buff_end) > 0 && check_nl(buff_end) == 1)
-		buff_end = ft_strchr(buff_end, '\n') + 1;
-	if (check_eof(fd, buff_end) == 1)
-		return (0);
-	return (1);
-}
-
-int		check_eof(int fd, char *buff_end)
-{
-	int		i;
-	int		ret;
-	char	*tmp;
-
-	i = 0;
-	while (buff_end[i] != '\0')
-	{
-		if (buff_end[i] > 0)
-			return (0);
-		i++;
-	}
-	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
-	ret = read(fd, tmp, BUFF_SIZE);
-	tmp[ret] = '\0';
-	if (ret == 0)
-		return (1);
-	buff_end = ft_strjoin(buff_end, tmp);
-	return (0);
-}
-
-int		check_nl(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i] != '\0')
+	while (i < ft_strlen(str))
 	{
 		if (str[i] == '\n')
-			return (1);
+			return (i);
 		i++;
 	}
-	return (0);
+	return (-1);
 }
 
-char	*read_till_nl(int fd, char *buff, char **line)
+static char	*str_memcat(char *mem1, char *mem2, size_t size, int reset)
 {
-	int		i;
-	int		ret;
 	char	*tmp;
 
-	tmp = ft_strnew((size_t)(BUFF_SIZE + 1));
-	while (check_nl(buff) != 1 && ret > 0)
-	{
-		*line = ft_strjoin(*line, buff);
-		ret = read(fd, buff, BUFF_SIZE);
-		buff[ret] = '\0';
-	}
-	i = 0;
-	while (buff[i] != '\n' && buff[i] != '\0')
-	{
-		tmp[i] = buff[i];
-		i++;
-	}
-	tmp[i] = '\0';
-	*line = ft_strjoin(*line, tmp);
-	return (*line);
+	if (!(tmp = (char *)malloc(ft_strlen(mem1) + size + 1)))
+		return (NULL);
+	ft_memset(tmp, '\0', (size_t)(ft_strlen(mem1) + size + 1));
+	ft_memcpy(tmp, mem1, ft_strlen(mem1));
+	ft_memcpy(tmp + ft_strlen(mem1), mem2, size);
+	tmp[ft_strlen(mem1) + size] = '\0';
+	if (reset == 1)
+		ft_memset(mem2, '\0', BUFF_SIZE);
+	if (mem1 != NULL)
+		free(mem1);
+	return (tmp);
 }
 
-int		main(int argc, char **argv)
+static int	fill_buffer(int fd, char *buff)
 {
-	int			fd;
-	char		**line;
-	int			gnl;
+	int		ret;
 
-	if (argc == 2)
+	if ((ret = read(fd, buff, BUFF_SIZE)) == -1)
+		return (-1);
+	buff[ret] = '\0';
+	return (ret);
+}
+
+static int	gnl(char **line, const int fd, int ret)
+{
+	static char	buff_end[BUFF_SIZE];
+	int			i;
+
+	while (ret > 0)
 	{
-		if ((fd = open(argv[1], O_RDONLY)) == -1)
-			return (-1);
-		if (!(line = (char **)malloc(1 * sizeof(char *))))
-			return (-1);
-		*line = ft_strnew((size_t)(BUFF_SIZE + 1));
-		while ((gnl = get_next_line(fd, line)) != 0)
+		if ((i = check_nl(buff_end)) >= 0)
 		{
-			ft_putnbr(gnl);
-			ft_putendl(" // Line :");
-			ft_putstr(*line);
-			ft_putchar('\n');
+			*line = str_memcat(*line, buff_end, i, 0);
+			ft_strcpy(buff_end, buff_end + i + 1);
+			return (1);
 		}
-		ft_putnbr(gnl);
-		ft_putendl(" // Line :");
-		ft_putstr(*line);
+		*line = (ft_strlen(*line) + ft_strlen(buff_end) + 1 > 2048) ? str_memcat(*line, buff_end, ft_strlen(buff_end), 1) : ft_strncpy(*line, buff_end, ft_strlen(buff_end));
+		//*line = str_memcat(*line, buff_end, ft_strlen(buff_end), 1);
+		if ((ret = fill_buffer(fd, buff_end)) == -1)
+			return (-1);
 	}
-	else
-		ft_putendl("File missing");
-	return (0);
+	return (ft_strlen(*line) > 0 ? 1 : 0);
+}
+
+int			get_next_line(const int fd, char **line)
+{
+	int		ret;
+
+	ret = 1;
+	if (!line || !(*line = (char *)malloc(2048 * sizeof(char)))
+		|| fd < 0)
+		return (-1);
+	ft_memset(*line, '\0', (size_t)(2048));
+	return (gnl(line, fd, ret));
 }

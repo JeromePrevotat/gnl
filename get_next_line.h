@@ -6,26 +6,19 @@
 /*   By: jprevota <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/28 16:44:38 by jprevota          #+#    #+#             */
-/*   Updated: 2017/04/16 14:52:31 by jprevota         ###   ########.fr       */
+/*   Updated: 2017/04/20 15:56:30 by admin            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
-# define BUFF_SIZE 10
-# include "./libft/libft.h"
+# define BUFF_SIZE 1
+# include "./libft.h"
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <fcntl.h>
 
-int						get_next_line(const int fd, char **line);
-int						check_nl(char *str);
-int						check_eof(int fd, char *buff_end);
-char					*read_till_nl(int fd, char *buff, char **line);
-
-typedef struct			s_fd_list
-{
-	int					fd;
-	char				*buff_end;
-	struct t_fd_list	*next;
-}						t_fd_list;
+int		get_next_line(const int fd, char **line);
 
 #endif
