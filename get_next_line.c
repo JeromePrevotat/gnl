@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "./get_next_line.h"
+#include <stdio.h>
 
 static int	check_nl(char *str)
 {
@@ -26,52 +27,56 @@ static int	check_nl(char *str)
 	return (-1);
 }
 
-static char	*str_memcat(char *mem1, char *mem2, size_t size, int reset)
+static int	fill_buffer(int fd, char **buff, size_t *mem_tmp)
 {
-	char	*tmp;
-
-	if (!(tmp = (char *)malloc(ft_strlen(mem1) + size + 1)))
-		return (NULL);
-	ft_memset(tmp, '\0', (size_t)(ft_strlen(mem1) + size + 1));
-	ft_memcpy(tmp, mem1, ft_strlen(mem1));
-	ft_memcpy(tmp + ft_strlen(mem1), mem2, size);
-	tmp[ft_strlen(mem1) + size] = '\0';
-	if (reset == 1)
-		ft_memset(mem2, '\0', BUFF_SIZE);
-	if (mem1 != NULL)
-		free(mem1);
-	return (tmp);
-}
-
-static int	fill_buffer(int fd, char *buff)
-{
+	char	*new_buff;
 	int		ret;
 
-	if ((ret = read(fd, buff, BUFF_SIZE)) == -1)
+	while (ft_strlen(*buff) + BUFF_SIZE + 1 > *mem_tmp)
+		*mem_tmp = *mem_tmp + 256;
+	if (!(new_buff = (char *)malloc(*mem_tmp * sizeof(char))))
 		return (-1);
-	buff[ret] = '\0';
+	ft_memset(new_buff, '\0', *mem_tmp);
+	ft_strcpy(new_buff, *buff);
+	free(*buff);
+	*buff = new_buff;
+	ret = read(fd, *buff + ft_strlen(*buff), BUFF_SIZE);
 	return (ret);
 }
 
 static int	gnl(char **line, const int fd, int ret)
 {
-	static char	buff_end[BUFF_SIZE];
+	static char	*buff_end = "";
+	char		*buff;
+	char		*tmp;
 	int			i;
+	size_t 		mem_tmp;
 
-	while (ret > 0)
+	mem_tmp = 256;
+	buff_end = (ft_strcmp(buff_end, "") == 0) ? ft_strnew(0) : buff_end;
+	if ((i = check_nl(buff_end)) >= 0)
 	{
-		if ((i = check_nl(buff_end)) >= 0)
-		{
-			*line = str_memcat(*line, buff_end, i, 0);
-			ft_strcpy(buff_end, buff_end + i + 1);
-			return (1);
-		}
-		*line = (ft_strlen(*line) + ft_strlen(buff_end) + 1 > 2048) ? str_memcat(*line, buff_end, ft_strlen(buff_end), 1) : ft_strncpy(*line, buff_end, ft_strlen(buff_end));
-		//*line = str_memcat(*line, buff_end, ft_strlen(buff_end), 1);
-		if ((ret = fill_buffer(fd, buff_end)) == -1)
-			return (-1);
+		*line = ft_strsub(buff_end, 0, i);
+		ft_strcpy(buff_end, buff_end + i + 1);
+		return (1);
 	}
-	return (ft_strlen(*line) > 0 ? 1 : 0);
+	if (!(buff = (char *)malloc(mem_tmp * sizeof(char))))
+		return (-1);
+	ft_memset(buff, '\0', mem_tmp);
+	while (ret > 0 && (i = check_nl(buff)) < 0)
+		if ((ret = fill_buffer(fd, &buff, &mem_tmp)) == -1)
+			return (-1);
+	if ((i = check_nl(buff)) >= 0)
+	{
+		*line = ft_strjoin(buff_end, (tmp = ft_strsub(buff, 0, i)));
+		ft_strdel(&buff_end);
+		ft_strdel(&tmp);
+		buff_end = ft_strsub(buff, i + 1, ft_strlen(buff));
+		return (1);
+	}
+	*line = ft_strjoin(buff_end, buff);
+	ft_strcpy(buff_end, buff_end + i + 1);
+	return (ft_strlen(*line) == 0 ? 0 : 1);
 }
 
 int			get_next_line(const int fd, char **line)
@@ -79,9 +84,7 @@ int			get_next_line(const int fd, char **line)
 	int		ret;
 
 	ret = 1;
-	if (!line || !(*line = (char *)malloc(2048 * sizeof(char)))
-		|| fd < 0)
+	if (!line || fd < 0 || BUFF_SIZE <= 0)
 		return (-1);
-	ft_memset(*line, '\0', (size_t)(2048));
 	return (gnl(line, fd, ret));
 }
