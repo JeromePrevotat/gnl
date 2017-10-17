@@ -27,21 +27,21 @@ static int	check_nl(char *str)
 	return (-1);
 }
 
-static int	fill_buffer(int fd, char **buff, size_t *mem_tmp)
+static char	*str_catfree(char *line, char *buff, int reset)
 {
-	char	*new_buff;
-	int		ret;
+	char	*tmp;
+	size_t	size;
 
-	while (ft_strlen(*buff) + BUFF_SIZE + 1 > *mem_tmp)
-		*mem_tmp = *mem_tmp + 256;
-	if (!(new_buff = (char *)malloc(*mem_tmp * sizeof(char))))
-		return (-1);
-	ft_memset(new_buff, '\0', *mem_tmp);
-	ft_strcpy(new_buff, *buff);
-	free(*buff);
-	*buff = new_buff;
-	ret = read(fd, *buff + ft_strlen(*buff), BUFF_SIZE);
-	return (ret);
+	size = ft_strlen(line) + ft_strlen(buff) + 1;
+	if (!(tmp = (char *)malloc(size * sizeof(char))))
+		return (NULL);
+	ft_memset(tmp, '\0', size);
+	ft_memcpy(tmp, line, ft_strlen(line));
+	ft_memcpy(tmp + ft_strlen(tmp), buff, ft_strlen(buff));
+	free(line);
+	if (reset == 1)
+		ft_memset(buff, '\0', ft_strlen(buff));
+	return (tmp);
 }
 
 static int	gnl(char **line, const int fd, int ret)
@@ -50,9 +50,7 @@ static int	gnl(char **line, const int fd, int ret)
 	char		*buff;
 	char		*tmp;
 	int			i;
-	size_t 		mem_tmp;
 
-	mem_tmp = 256;
 	buff_end = (ft_strcmp(buff_end, "") == 0) ? ft_strnew(0) : buff_end;
 	if ((i = check_nl(buff_end)) >= 0)
 	{
@@ -60,22 +58,27 @@ static int	gnl(char **line, const int fd, int ret)
 		ft_strcpy(buff_end, buff_end + i + 1);
 		return (1);
 	}
-	if (!(buff = (char *)malloc(mem_tmp * sizeof(char))))
+	*line = ft_strdup(buff_end);
+	free(buff_end);
+	if (!(buff = (char *)malloc(BUFF_SIZE + 1 * sizeof(char))))
 		return (-1);
-	ft_memset(buff, '\0', mem_tmp);
-	while (ret > 0 && (i = check_nl(buff)) < 0)
-		if ((ret = fill_buffer(fd, &buff, &mem_tmp)) == -1)
-			return (-1);
-	if ((i = check_nl(buff)) >= 0)
+	ft_memset(buff, '\0', BUFF_SIZE + 1);
+	while (ret > 0)
 	{
-		*line = ft_strjoin(buff_end, (tmp = ft_strsub(buff, 0, i)));
-		ft_strdel(&buff_end);
-		ft_strdel(&tmp);
-		buff_end = ft_strsub(buff, i + 1, ft_strlen(buff));
-		return (1);
+		if ((ret = read(fd, buff, BUFF_SIZE)) == -1)
+			return (-1);
+		if ((i = check_nl(buff)) >= 0)
+		{
+			tmp = ft_strsub(buff, 0, i);
+			*line = str_catfree(*line, tmp, 0);
+			free(tmp);
+			buff_end = ft_strsub(buff, i + 1, ft_strlen(buff));
+			return (1);
+		}
+		*line = str_catfree(*line, buff, 1);
 	}
-	*line = ft_strjoin(buff_end, buff);
-	ft_strcpy(buff_end, buff_end + i + 1);
+	*line = str_catfree(buff_end, buff, 1);
+	ft_memset(buff_end, '\0', ft_strlen(buff_end));
 	return (ft_strlen(*line) == 0 ? 0 : 1);
 }
 
