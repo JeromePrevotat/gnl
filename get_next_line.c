@@ -15,10 +15,10 @@
 
 static int	find_nl(char *str)
 {
-	size_t	i;
+	int	i;
 
 	i = 0;
-	while (i < ft_strlen(str))
+	while ((size_t)i < ft_strlen(str))
 	{
 		if (str[i] == '\n')
 			return (i);
@@ -31,7 +31,7 @@ static char	*set_buff_end(char *buff_end)
 {
 	if (ft_strchr(buff_end, '\n'))
 	{
-		ft_strcpy(buff_end, buff_end + find_nl(buff_end) + 1);
+		ft_strcpy(buff_end, ft_strchr(buff_end, '\n') + 1);
 		return (buff_end);
 	}
 	if (ft_strlen(buff_end) > 0)
@@ -40,6 +40,24 @@ static char	*set_buff_end(char *buff_end)
 		return (buff_end);
 	}
 	return (NULL);
+}
+
+static char	*str_memcat(char *s1, char *s2)
+{
+	size_t	size;
+	size_t	size1;
+	size_t	size2;
+	char	*tmp;
+
+	size1 = ft_strlen(s1);
+	size2 = ft_strlen(s2);
+	size = (size1 + size2 + 1);
+	if (!(tmp = (char *)malloc(size * sizeof(char))))
+		return (NULL);
+	ft_memset(tmp, '\0', size);
+	ft_memcpy(tmp, s1, size1);
+	ft_memcpy(tmp + size1, s2, size2);
+	return (tmp);
 }
 
 int			get_next_line(const int fd, char **line)
@@ -53,16 +71,13 @@ int			get_next_line(const int fd, char **line)
 		return (-1);
 	buff_end = (ft_strcmp("", buff_end) == 0) ? ft_strnew(0) : buff_end;
 	while (ft_strchr(buff_end, '\n') == NULL
-		&& (ret = read(fd, buff, BUFF_SIZE) > 0))
+		&& (ret = read(fd, buff, BUFF_SIZE)) > 0)
 	{
 		buff[ret] = '\0';
-		printf("BUFFEND : >%s<\nRET : %d\n", buff, ret);
 		tmp = buff_end;
-		buff_end = ft_strjoin(tmp, buff);
-		//free(tmp);
+		buff_end = str_memcat(tmp, buff);
+		free(tmp);
 	}
 	*line = ft_strsub(buff_end, 0, find_nl(buff_end));
-	if (set_buff_end(buff_end) == NULL)
-		return (0);
-	return (1);
+	return ((set_buff_end(buff_end) == NULL) ? 0 : 1);
 }
