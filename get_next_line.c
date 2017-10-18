@@ -36,7 +36,7 @@ static char	*set_buff_end(char *buff_end)
 	}
 	if (ft_strlen(buff_end) > 0)
 	{
-		ft_memset(buff_end, '\0', ft_strlen(buff_end));
+		buff_end[0] = '\0';
 		return (buff_end);
 	}
 	return (NULL);
