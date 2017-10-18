@@ -13,10 +13,10 @@ int	main(int argc, char **argv)
 		return (-1);
 	while ((gnl = get_next_line(fd, &line)))
 	{
-		printf("%s\n", line);
+		printf("GNL : %d // LINE : >%s<\n", gnl, line);
 		free(line);
 	}
-	printf("%s\n", line);
+	printf("GNL : %d // LINE : >%s<\n", gnl, line);
 	free(line);
 	close(fd);
 	return (0);
